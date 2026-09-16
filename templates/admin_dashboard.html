@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logic Hunt | Admin Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+ --bg:#060816;--sidebar:#080c1b;--card:#0f1528;--border:rgba(255,255,255,.08);
+ --text:#f5f7ff;--muted:#8d96ad;--primary:#7c5cff;--primary2:#a38cff;
+ --green:#31d9a3;--yellow:#ffc857;--red:#ff6077;--blue:#55b8ff
+}
+body{min-height:100vh;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);
+background:radial-gradient(circle at 85% 5%,rgba(124,92,255,.13),transparent 28%),radial-gradient(circle at 20% 90%,rgba(40,170,255,.07),transparent 25%),var(--bg)}
+a{text-decoration:none;color:inherit}button,input{font:inherit}
+.app{min-height:100vh;display:flex}
+.sidebar{width:250px;min-height:100vh;position:fixed;left:0;top:0;bottom:0;padding:24px 16px;background:rgba(8,12,27,.94);
+border-right:1px solid var(--border);backdrop-filter:blur(25px);z-index:20}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 10px 34px}
+.brand-logo,.mobile-logo{display:flex;align-items:center;justify-content:center;border-radius:13px;background:linear-gradient(135deg,#7c5cff,#a98fff);font-weight:900}
+.brand-logo{width:42px;height:42px}.brand-name{font-size:20px;font-weight:850}.brand-name span{color:var(--primary2)}
+.nav-label{padding:0 12px 10px;color:#59647b;font-size:10px;font-weight:900;letter-spacing:1.5px}
+.nav{display:flex;flex-direction:column;gap:5px}.nav-item{height:46px;display:flex;align-items:center;gap:13px;padding:0 13px;border-radius:12px;color:var(--muted);font-size:13px;font-weight:700}
+.nav-item:hover,.nav-item.active{color:white;background:rgba(124,92,255,.09)}.nav-item.active{border:1px solid rgba(124,92,255,.15)}
+.nav-icon{width:19px;height:19px;display:flex;align-items:center;justify-content:center}
+.sidebar-bottom{position:absolute;left:16px;right:16px;bottom:18px;border-top:1px solid var(--border);padding-top:18px}
+.admin-profile{display:flex;align-items:center;gap:11px;padding:10px;margin-bottom:8px}.avatar{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#252e47;font-weight:800}
+.profile-info strong{display:block;font-size:12px}.profile-info span{display:block;margin-top:3px;color:var(--muted);font-size:10px}
+.logout{height:42px;display:flex;align-items:center;gap:12px;padding:0 13px;border-radius:10px;color:#78839a;font-size:12px;font-weight:700}.logout:hover{color:var(--red);background:rgba(255,96,119,.06)}
+.main{width:calc(100% - 250px);margin-left:250px;padding:34px 40px 60px;max-width:1600px}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:25px;margin-bottom:28px}
+.eyebrow{color:var(--primary2);font-size:10px;font-weight:900;letter-spacing:1.7px}.heading h1{margin-top:8px;font-size:clamp(28px,3vw,38px);font-weight:850;letter-spacing:-1.5px}.heading p{margin-top:8px;color:var(--muted);font-size:13px}
+.create-button,.primary-btn{height:46px;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:0 18px;border:0;border-radius:12px;color:white;background:linear-gradient(135deg,#7c5cff,#6746e8);font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 12px 30px rgba(124,92,255,.2)}
+.flash{padding:12px 15px;margin-bottom:18px;border-radius:10px;font-size:12px;font-weight:700}.flash.success{color:#78e8c4;background:rgba(49,217,163,.08);border:1px solid rgba(49,217,163,.12)}.flash.error{color:#ff91a2;background:rgba(255,96,119,.08);border:1px solid rgba(255,96,119,.12)}
+.section{margin-top:28px}.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.section-title h2{margin-top:5px;font-size:20px;font-weight:800}
+.quiz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.quiz-card{padding:21px;border:1px solid var(--border);border-radius:18px;background:rgba(14,20,37,.82);transition:.2s}.quiz-card:hover{transform:translateY(-3px);border-color:rgba(124,92,255,.2)}
+.quiz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.quiz-card h3{font-size:17px;font-weight:800;line-height:1.35}.quiz-description{min-height:38px;margin-top:9px;color:var(--muted);font-size:11px;line-height:1.55}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:17px}.action{height:38px;border:1px solid var(--border);border-radius:10px;color:#cdd3df;background:rgba(255,255,255,.025);font-size:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.action:hover{color:white;background:rgba(124,92,255,.1)}
+.full{grid-column:1/-1}.empty{padding:55px 25px;text-align:center;border:1px dashed rgba(255,255,255,.1);border-radius:18px;color:var(--muted)}.empty h3{color:white;font-size:15px}.empty p{margin-top:6px;font-size:11px}.empty .create-button{margin-top:18px}
+.mobile-header{display:none}
+@media(max-width:1100px){.quiz-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.sidebar{display:none}.main{width:100%;margin-left:0;padding:24px 18px 50px}.mobile-header{display:flex;align-items:center;margin-bottom:25px}.mobile-logo{width:35px;height:35px;font-size:14px;margin-right:9px}.topbar{flex-direction:column}.create-button{width:100%}}
+@media(max-width:600px){.quiz-grid{grid-template-columns:1fr}.actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+    <div class="brand"><div class="brand-logo">LH</div><div class="brand-name">Logic <span>Hunt</span></div></div>
+    <div class="nav-label">MAIN MENU</div>
+    <nav class="nav">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-item active"><span class="nav-icon">▦</span>Dashboard</a>
+        <a href="{{ url_for('create_quiz_page') }}" class="nav-item"><span class="nav-icon">＋</span>Create Quiz</a>
+    </nav>
+    <div class="sidebar-bottom">
+        <div class="admin-profile"><div class="avatar">A</div><div class="profile-info"><strong>Administrator</strong><span>Quiz Manager</span></div></div>
+        <a href="{{ url_for('admin_logout') }}" class="logout">⇥ Logout</a>
+    </div>
+</aside>
+
+<main class="main">
+    <div class="mobile-header"><div class="mobile-logo">LH</div><strong>Logic Hunt</strong></div>
+
+    <header class="topbar">
+        <div class="heading">
+            <div class="eyebrow">ADMIN CONTROL CENTER</div>
+            <h1>Dashboard</h1>
+            <p>Manage your Logic Hunt competitions and questions.</p>
+        </div>
+        <a href="{{ url_for('create_quiz_page') }}" class="create-button">＋ Create Quiz</a>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+
+
+    <section class="section">
+        <div class="section-header">
+            <div class="section-title"><div class="eyebrow">LOGIC HUNT</div><h2>Your Quizzes</h2></div>
+            <span style="color:var(--muted);font-size:11px">{{ quizzes|length }} TOTAL</span>
+        </div>
+
+        {% if quizzes %}
+        <div class="quiz-grid">
+            {% for quiz in quizzes %}
+            <article class="quiz-card">
+                <div class="quiz-top">
+                    <span style="color:var(--muted);font-size:11px">LOGIC HUNT</span>
+                </div>
+
+                <h3>{{ quiz.title }}</h3>
+                <p class="quiz-description">{{ quiz.description or "No description has been added to this quiz." }}</p>
+
+
+
+                <div class="actions">
+                    <a class="action" href="{{ url_for('admin_quiz_results', quiz_id=quiz.id) }}">Submissions</a>
+                    <a class="action" href="{{ url_for('add_question_page', quiz_id=quiz.id) }}">Manage Questions</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">
+            <h3>No quizzes created yet</h3>
+            <p>Create your first quiz and start building the question bank.</p>
+            <a href="{{ url_for('create_quiz_page') }}" class="create-button">＋ Create Your First Quiz</a>
+        </div>
+        {% endif %}
+    </section>
+</main>
+</div>
+</body>
+</html>
