@@ -82,6 +82,7 @@ a{text-decoration:none;color:inherit}button{font:inherit}
                             <th>SELECT</th>
                             <th>STUDENT</th>
                             <th>ROLL NUMBER</th>
+                            <th>BRANCH</th>
                             <th>YEAR</th>
                             <th>SECTION</th>
                             <th>SCORE</th>
@@ -105,6 +106,7 @@ a{text-decoration:none;color:inherit}button{font:inherit}
                             </td>
                             <td class="name"><strong>{{ row.name or 'Unknown' }}</strong></td>
                             <td>{{ row.roll_no or '—' }}</td>
+                            <td>{{ row.branch or '—' }}</td>
                             <td>{{ row.year or '—' }}</td>
                             <td>{{ row.section or '—' }}</td>
                             <td class="score">{{ row.score }} / {{ row.total_questions }}</td>
@@ -189,7 +191,7 @@ a{text-decoration:none;color:inherit}button{font:inherit}
             <div style="padding:18px 22px">
                 {% for winner in winners %}
                 <div class="winner-card">
-                    <div><div class="winner-rank">RANK #{{ winner.rank }}</div><div class="winner-name">{{ winner.name }} · {{ winner.roll_no }}</div><div class="winner-meta">Year {{ winner.year }} · Section {{ winner.section }}</div></div>
+                    <div><div class="winner-rank">RANK #{{ winner.rank }}</div><div class="winner-name">{{ winner.name }} · {{ winner.roll_no }}</div><div class="winner-meta">Branch {{ winner.branch or '—' }} · Year {{ winner.year }} · Section {{ winner.section }}</div></div>
                     <div style="text-align:right"><div class="winner-score">{{ winner.score }} / {{ winner.total_questions }}</div><div class="winner-meta" data-winner-seconds="{{ winner.total_time_taken or 0 }}">Time</div></div>
                 </div>
                 {% endfor %}
