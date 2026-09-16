@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QuizCore | Quiz Builder</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #060816;
+            --sidebar: rgba(8, 12, 27, 0.94);
+            --card: rgba(15, 21, 40, 0.82);
+            --card-2: rgba(11, 17, 32, 0.85);
+            --border: rgba(255, 255, 255, 0.08);
+
+            --text: #f5f7ff;
+            --muted: #8d96ad;
+
+            --primary: #7c5cff;
+            --primary-light: #a38cff;
+
+            --green: #31d9a3;
+            --red: #ff6077;
+            --yellow: #ffc857;
+        }
+
+
+        /* =====================================
+           GLOBAL
+        ===================================== */
+
+        body {
+
+            min-height: 100vh;
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            color: var(--text);
+
+            background:
+                radial-gradient(
+                    circle at 85% 5%,
+                    rgba(124, 92, 255, 0.13),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 20% 90%,
+                    rgba(40, 170, 255, 0.07),
+                    transparent 25%
+                ),
+                var(--bg);
+        }
+
+
+        button,
+        input,
+        textarea,
+        select {
+            font: inherit;
+        }
+
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+
+        /* =====================================
+           APP
+        ===================================== */
+
+        .app {
+
+            min-height: 100vh;
+
+            display: flex;
+        }
+
+
+        /* =====================================
+           SIDEBAR
+        ===================================== */
+
+        .sidebar {
+
+            width: 250px;
+
+            min-height: 100vh;
+
+            position: fixed;
+
+            left: 0;
+            top: 0;
+            bottom: 0;
+
+            padding: 24px 16px;
+
+            background: var(--sidebar);
+
+            border-right: 1px solid var(--border);
+
+            backdrop-filter: blur(25px);
+
+            z-index: 20;
+
+            display: flex;
+
+            flex-direction: column;
+        }
+
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+
+            padding: 4px 10px 34px;
+        }
+
+
+        .brand-logo {
+
+            width: 42px;
+            height: 42px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c5cff,
+                    #a98fff
+                );
+
+            font-size: 18px;
+
+            font-weight: 900;
+
+            box-shadow:
+                0 12px 30px rgba(124,92,255,0.25);
+        }
+
+
+        .brand-name {
+
+            font-size: 20px;
+
+            font-weight: 850;
+        }
+
+
+        .brand-name span {
+
+            color: var(--primary-light);
+        }
+
+
+        .nav-label {
+
+            padding: 0 12px 10px;
+
+            color: #59647b;
+
+            font-size: 10px;
+
+            font-weight: 900;
+
+            letter-spacing: 1.5px;
+        }
+
+
+        .nav {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 5px;
+        }
+
+
+        .nav-item {
+
+            height: 46px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 0 13px;
+
+            border-radius: 12px;
+
+            color: var(--muted);
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            transition: 0.2s;
+        }
+
+
+        .nav-item:hover {
+
+            color: white;
+
+            background: rgba(255,255,255,0.04);
+        }
+
+
+        .nav-item.active {
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(124,92,255,0.19),
+                    rgba(124,92,255,0.07)
+                );
+
+            border: 1px solid rgba(124,92,255,0.15);
+        }
+
+
+        .sidebar-bottom {
+
+            margin-top: auto;
+
+            padding-top: 18px;
+
+            border-top: 1px solid var(--border);
+        }
+
+
+        .admin-profile {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+
+            padding: 10px;
+
+            margin-bottom: 8px;
+        }
+
+
+        .avatar {
+
+            width: 38px;
+            height: 38px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #202942,
+                    #303b5d
+                );
+
+            font-size: 13px;
+
+            font-weight: 800;
+        }
+
+
+        .profile-info strong {
+
+            display: block;
+
+            font-size: 12px;
+        }
+
+
+        .profile-info span {
+
+            display: block;
+
+            margin-top: 3px;
+
+            color: var(--muted);
+
+            font-size: 10px;
+        }
+
+
+        .logout {
+
+            height: 42px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 0 13px;
+
+            border-radius: 10px;
+
+            color: #78839a;
+
+            font-size: 12px;
+
+            font-weight: 700;
+        }
+
+
+        .logout:hover {
+
+            color: var(--red);
+
+            background: rgba(255,96,119,0.06);
+        }
+
+
+        /* =====================================
+           MAIN
+        ===================================== */
+
+        .main {
+
+            width: calc(100% - 250px);
+
+            margin-left: 250px;
+
+            padding: 34px 40px 70px;
+        }
+
+
+        .topbar {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 20px;
+
+            margin-bottom: 30px;
+        }
+
+
+        .eyebrow {
+
+            color: var(--primary-light);
+
+            font-size: 10px;
+
+            font-weight: 900;
+
+            letter-spacing: 1.7px;
+        }
+
+
+        .heading h1 {
+
+            margin-top: 7px;
+
+            font-size: 34px;
+
+            letter-spacing: -1.2px;
+        }
+
+
+        .heading p {
+
+            margin-top: 7px;
+
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+
+        .back-button {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 11px 15px;
+
+            border: 1px solid var(--border);
+
+            border-radius: 11px;
+
+            background: rgba(255,255,255,0.03);
+
+            color: #cbd2df;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            transition: 0.2s;
+        }
+
+
+        .back-button:hover {
+
+            background: rgba(255,255,255,0.07);
+
+            color: white;
+        }
+
+
+        /* =====================================
+           QUIZ INFO
+        ===================================== */
+
+        .quiz-info {
+
+            padding: 25px;
+
+            margin-bottom: 22px;
+
+            border: 1px solid var(--border);
+
+            border-radius: 20px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(17,24,45,0.9),
+                    rgba(12,17,33,0.82)
+                );
+        }
+
+
+        .info-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+
+        .info-header h2 {
+
+            font-size: 17px;
+        }
+
+
+        .draft-badge {
+
+            padding: 6px 10px;
+
+            border-radius: 100px;
+
+            color: var(--yellow);
+
+            background: rgba(255,200,87,0.08);
+
+            font-size: 9px;
+
+            font-weight: 900;
+        }
+
+
+        .info-fields {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 16px;
+        }
+
+
+        .field label {
+
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #cbd2df;
+
+            font-size: 11px;
+
+            font-weight: 800;
+        }
+
+
+        input,
+        textarea,
+        select {
+
+            width: 100%;
+
+            border: 1px solid var(--border);
+
+            outline: none;
+
+            border-radius: 11px;
+
+            padding: 13px 14px;
+
+            background: rgba(5,8,20,0.72);
+
+            color: white;
+
+            transition: 0.2s;
+        }
+
+
+        textarea {
+
+            resize: vertical;
+
+            min-height: 95px;
+        }
+
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+
+            border-color: var(--primary);
+
+            box-shadow:
+                0 0 0 4px rgba(124,92,255,0.09);
+        }
+
+
+        /* =====================================
+           BUILDER
+        ===================================== */
+
+        .builder {
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(480px, 1fr)
+                minmax(380px, 0.85fr);
+
+            gap: 22px;
+
+            align-items: start;
+        }
+
+
+        .panel {
+
+            padding: 26px;
+
+            border: 1px solid var(--border);
+
+            border-radius: 20px;
+
+            background:
+                rgba(14,20,37,0.84);
+        }
+
+
+        .panel-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-start;
+
+            margin-bottom: 23px;
+        }
+
+
+        .panel-header h2 {
+
+            margin-top: 5px;
+
+            font-size: 20px;
+        }
+
+
+        .question-count {
+
+            padding: 7px 10px;
+
+            border-radius: 9px;
+
+            background: rgba(124,92,255,0.10);
+
+            color: var(--primary-light);
+
+            font-size: 10px;
+
+            font-weight: 900;
+        }
+
+
+        /* =====================================
+           QUESTION FORM
+        ===================================== */
+
+        .question-label {
+
+            display: block;
+
+            margin-bottom: 9px;
+
+            color: #d5dae5;
+
+            font-size: 11px;
+
+            font-weight: 800;
+        }
+
+
+        .question-input {
+
+            min-height: 125px;
+
+            margin-bottom: 21px;
+
+            line-height: 1.5;
+        }
+
+        .image-upload-section {
+            margin: 0 0 21px;
+        }
+
+        .image-upload-box {
+            border: 1px dashed rgba(124,92,255,0.32);
+            border-radius: 12px;
+            padding: 14px;
+            background: rgba(124,92,255,0.035);
+        }
+
+        .image-upload-box input[type="file"] {
+            padding: 10px;
+            background: rgba(255,255,255,0.025);
+            border-style: dashed;
+            cursor: pointer;
+        }
+
+        .image-help {
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: 9px;
+        }
+
+        .image-preview {
+            display: none;
+            max-width: 100%;
+            max-height: 180px;
+            margin-top: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            object-fit: contain;
+            background: #050814;
+        }
+
+        .existing-image {
+            display: block;
+            max-width: 100%;
+            max-height: 180px;
+            margin-top: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            object-fit: contain;
+            background: #050814;
+        }
+
+        .question-image {
+            display: block;
+            width: 100%;
+            max-height: 190px;
+            margin: 12px 0 2px;
+            border-radius: 10px;
+            object-fit: contain;
+            background: #050814;
+            border: 1px solid var(--border);
+        }
+
+
+        .options-title {
+
+            margin-bottom: 12px;
+
+            color: #d5dae5;
+
+            font-size: 11px;
+
+            font-weight: 800;
+        }
+
+
+        .options {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 12px;
+        }
+
+
+        .option {
+
+            position: relative;
+        }
+
+
+        .option-label {
+
+            position: absolute;
+
+            left: 12px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            width: 27px;
+
+            height: 27px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 8px;
+
+            background: rgba(124,92,255,0.10);
+
+            color: var(--primary-light);
+
+            font-size: 10px;
+
+            font-weight: 900;
+
+            pointer-events: none;
+        }
+
+
+        .option input {
+
+            padding-left: 50px;
+
+            height: 48px;
+
+            margin: 0;
+        }
+
+
+        .correct-section {
+
+            margin-top: 22px;
+
+            padding-top: 20px;
+
+            border-top: 1px solid var(--border);
+        }
+
+
+        .correct-options {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 9px;
+        }
+
+
+        .correct-option {
+
+            position: relative;
+        }
+
+
+        .correct-option input {
+
+            position: absolute;
+
+            opacity: 0;
+
+            pointer-events: none;
+        }
+
+
+        .correct-option label {
+
+            height: 43px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border: 1px solid var(--border);
+
+            border-radius: 10px;
+
+            color: var(--muted);
+
+            background: rgba(255,255,255,0.025);
+
+            cursor: pointer;
+
+            font-size: 11px;
+
+            font-weight: 900;
+
+            transition: 0.2s;
+        }
+
+
+        .correct-option input:checked + label {
+
+            color: var(--green);
+
+            background: rgba(49,217,163,0.09);
+
+            border-color:
+                rgba(49,217,163,0.35);
+        }
+
+
+        .add-button {
+
+            width: 100%;
+
+            height: 50px;
+
+            margin-top: 23px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c5cff,
+                    #6746e8
+                );
+
+            color: white;
+
+            font-size: 12px;
+
+            font-weight: 850;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+
+        .add-button:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 14px 30px rgba(124,92,255,0.23);
+        }
+
+
+        .cancel-button {
+
+            width: 100%;
+
+            height: 50px;
+
+            margin-top: 12px;
+
+            border: 1px solid var(--border);
+
+            border-radius: 12px;
+
+            background: rgba(255,255,255,0.03);
+
+            color: #cbd2df;
+
+            font-size: 12px;
+
+            font-weight: 850;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+
+            display: none;
+        }
+
+
+        .cancel-button:hover {
+
+            background: rgba(255,255,255,0.06);
+        }
+
+
+        .cancel-button.show {
+
+            display: block;
+        }
+
+
+        /* =====================================
+           QUESTION LIST
+        ===================================== */
+
+        .question-list {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+
+            max-height: 690px;
+
+            overflow-y: auto;
+
+            padding-right: 4px;
+        }
+
+
+        .question-list::-webkit-scrollbar {
+
+            width: 5px;
+        }
+
+
+        .question-list::-webkit-scrollbar-thumb {
+
+            background: rgba(255,255,255,0.10);
+
+            border-radius: 10px;
+        }
+
+
+        .question-item {
+
+            padding: 16px;
+
+            border: 1px solid var(--border);
+
+            border-radius: 14px;
+
+            background: rgba(7,11,24,0.55);
+
+            transition: 0.2s;
+        }
+
+
+        .question-item:hover {
+
+            border-color:
+                rgba(124,92,255,0.20);
+
+            background:
+                rgba(20,27,49,0.7);
+        }
+
+
+        .question-top {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 12px;
+        }
+
+
+        .question-number {
+
+            min-width: 31px;
+
+            height: 31px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 9px;
+
+            background:
+                rgba(124,92,255,0.10);
+
+            color: var(--primary-light);
+
+            font-size: 10px;
+
+            font-weight: 900;
+        }
+
+
+        .question-content {
+
+            flex: 1;
+        }
+
+
+        .question-content h3 {
+
+            font-size: 12px;
+
+            line-height: 1.55;
+
+            font-weight: 750;
+        }
+
+
+        .question-options {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 6px;
+
+            margin-top: 12px;
+        }
+
+
+        .question-option {
+
+            padding: 7px 9px;
+
+            border-radius: 7px;
+
+            background: rgba(255,255,255,0.025);
+
+            color: #778298;
+
+            font-size: 9px;
+        }
+
+
+        .question-option.correct {
+
+            color: var(--green);
+
+            background:
+                rgba(49,217,163,0.07);
+        }
+
+
+        .question-actions {
+
+            display: flex;
+
+            gap: 6px;
+
+            margin-top: 13px;
+        }
+
+
+        .small-button {
+
+            height: 30px;
+
+            padding: 0 10px;
+
+            border: 1px solid var(--border);
+
+            border-radius: 7px;
+
+            background: rgba(255,255,255,0.025);
+
+            color: #8993a8;
+
+            font-size: 9px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+
+        .small-button:hover {
+
+            color: white;
+
+            background: rgba(255,255,255,0.06);
+        }
+
+
+        .small-button.delete:hover {
+
+            color: var(--red);
+
+            border-color:
+                rgba(255,96,119,0.20);
+        }
+
+
+        .empty {
+
+            padding: 60px 20px;
+
+            text-align: center;
+
+            border:
+                1px dashed
+                rgba(255,255,255,0.09);
+
+            border-radius: 15px;
+        }
+
+
+        .empty-icon {
+
+            width: 48px;
+
+            height: 48px;
+
+            margin: 0 auto 13px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 14px;
+
+            color: var(--primary-light);
+
+            background:
+                rgba(124,92,255,0.08);
+
+            font-size: 22px;
+        }
+
+
+        .empty h3 {
+
+            font-size: 13px;
+        }
+
+
+        .empty p {
+
+            margin-top: 6px;
+
+            color: var(--muted);
+
+            font-size: 10px;
+        }
+
+
+        /* =====================================
+           FLASH
+        ===================================== */
+
+        .flash {
+
+            padding: 12px 15px;
+
+            margin-bottom: 20px;
+
+            border-radius: 10px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+        }
+
+
+        .flash.success {
+
+            color: #78e8c4;
+
+            background:
+                rgba(49,217,163,0.08);
+
+            border:
+                1px solid
+                rgba(49,217,163,0.12);
+        }
+
+
+        .flash.error {
+
+            color: #ff91a2;
+
+            background:
+                rgba(255,96,119,0.08);
+
+            border:
+                1px solid
+                rgba(255,96,119,0.12);
+        }
+
+
+        /* =====================================
+           RESPONSIVE
+        ===================================== */
+
+        @media (max-width: 1050px) {
+
+            .builder {
+
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+
+        @media (max-width: 800px) {
+
+            .sidebar {
+
+                display: none;
+            }
+
+            .main {
+
+                width: 100%;
+
+                margin-left: 0;
+
+                padding: 25px 18px 60px;
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .topbar {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+
+            .back-button {
+
+                width: 100%;
+
+                justify-content: center;
+            }
+
+
+            .info-fields {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .options {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .question-options {
+
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+    <!-- =====================================
+         SIDEBAR
+    ====================================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                Q
+            </div>
+
+            <div class="brand-name">
+                Quiz<span>Core</span>
+            </div>
+
+        </div>
+
+
+        <div class="nav-label">
+            MAIN MENU
+        </div>
+
+
+        <nav class="nav">
+
+            <a
+                href="{{ url_for('admin_dashboard') }}"
+                class="nav-item"
+            >
+                Dashboard
+            </a>
+
+
+            <a
+                href="{{ url_for('create_quiz_page') }}"
+                class="nav-item active"
+            >
+                Create Quiz
+            </a>
+
+
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <div class="admin-profile">
+
+                <div class="avatar">
+                    A
+                </div>
+
+                <div class="profile-info">
+
+                    <strong>
+                        Administrator
+                    </strong>
+
+                    <span>
+                        Quiz Manager
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('admin_logout') }}"
+                class="logout"
+            >
+                Logout
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================
+         MAIN
+    ====================================== -->
+
+    <main class="main">
+
+
+        <!-- HEADER -->
+
+        <header class="topbar">
+
+            <div class="heading">
+
+                <div class="eyebrow">
+                    QUIZ BUILDER
+                </div>
+
+
+                {% if quiz %}
+
+                    <h1>
+                        {{ quiz.title }}
+                    </h1>
+
+                    <p>
+                        Build and manage your question bank.
+                    </p>
+
+                {% else %}
+
+                    <h1>
+                        Create New Quiz
+                    </h1>
+
+                    <p>
+                        Set up your quiz before adding questions.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+
+            <a
+                href="{{ url_for('admin_dashboard') }}"
+                class="back-button"
+            >
+                ← Back to Dashboard
+            </a>
+
+        </header>
+
+
+        <!-- FLASH MESSAGES -->
+
+        {% with messages =
+            get_flashed_messages(
+                with_categories=true
+            )
+        %}
+
+            {% for category, message in messages %}
+
+                <div class="flash {{ category }}">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        {% endwith %}
+
+
+
+        <!-- =====================================
+             CREATE QUIZ
+        ====================================== -->
+
+        {% if not quiz %}
+
+        <section class="quiz-info">
+
+            <div class="info-header">
+
+                <h2>
+                    Quiz Information
+                </h2>
+
+                <span class="draft-badge">
+                    NEW QUIZ
+                </span>
+
+            </div>
+
+
+            <form
+                method="POST"
+                action="{{ url_for('create_quiz') }}"
+            >
+
+                <div class="info-fields">
+
+                    <div class="field">
+
+                        <label>
+                            Quiz Title
+                        </label>
+
+                        <input
+                            type="text"
+                            name="title"
+                            placeholder="Example: ECE Technical Quiz"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Description
+                        </label>
+
+                        <input
+                            type="text"
+                            name="description"
+                            placeholder="Short description"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="add-button"
+                >
+                    Create Quiz & Continue →
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- =====================================
+             EXISTING QUIZ
+        ====================================== -->
+
+        {% else %}
+
+
+        <section class="quiz-info">
+
+            <div class="info-header">
+
+                <div>
+
+                    <h2>
+                        {{ quiz.title }}
+                    </h2>
+
+                </div>
+
+
+                <span class="draft-badge">
+                    {{ quiz.status|upper }}
+                </span>
+
+            </div>
+
+
+            <div class="info-fields">
+
+                <div class="field">
+
+                    <label>
+                        Description
+                    </label>
+
+                    <input
+                        type="text"
+                        value="{{ quiz.description or '' }}"
+                        readonly
+                    >
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>
+                        Questions Added
+                    </label>
+
+                    <input
+                        type="text"
+                        value="{{ questions|length }} questions"
+                        readonly
+                    >
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================
+             QUESTION BUILDER
+        ====================================== -->
+
+        <section class="builder">
+
+
+            <!-- =================================
+                 LEFT PANEL
+            ================================== -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <div class="eyebrow">
+                            QUESTION BUILDER
+                        </div>
+
+                        <h2>
+                            Add Question
+                        </h2>
+
+                    </div>
+
+
+                    <span class="question-count">
+                        Q{{ questions|length + 1 }}
+                    </span>
+
+                </div>
+
+
+                <form
+                    method="POST"
+                    enctype="multipart/form-data"
+                    action="{{ url_for(
+                        'add_question',
+                        quiz_id=quiz.id
+                    ) }}"
+                    id="questionForm"
+                >
+
+
+                    <!-- QUESTION -->
+
+                    <label class="question-label">
+                        Question
+                    </label>
+
+
+                    <textarea
+                        class="question-input"
+                        name="question_text"
+                        id="questionText"
+                        placeholder="Type your question here..."
+                        maxlength="500"
+                        required
+                    ></textarea>
+
+
+                    <!-- OPTIONAL QUESTION IMAGE -->
+
+                    <div class="image-upload-section">
+
+                        <label class="question-label">
+                            Question Image <span style="color:var(--muted);font-weight:600;">(Optional)</span>
+                        </label>
+
+                        <div class="image-upload-box">
+
+                            <input
+                                type="file"
+                                name="question_image"
+                                id="questionImage"
+                                accept="image/png,image/jpeg,image/jpg,image/webp"
+                            >
+
+                            <div class="image-help">
+                                PNG, JPG or WEBP • Max 5 MB • Leave empty for text-only questions.
+                            </div>
+
+                            <img
+                                id="imagePreview"
+                                class="image-preview"
+                                alt="Selected question image preview"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- OPTIONS -->
+
+                    <div class="options-title">
+                        Answer Options
+                    </div>
+
+
+                    <div class="options">
+
+
+                        <div class="option">
+
+                            <span class="option-label">
+                                A
+                            </span>
+
+                            <input
+                                type="text"
+                                name="option_a"
+                                placeholder="Option A"
+                                maxlength="200"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="option">
+
+                            <span class="option-label">
+                                B
+                            </span>
+
+                            <input
+                                type="text"
+                                name="option_b"
+                                placeholder="Option B"
+                                maxlength="200"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="option">
+
+                            <span class="option-label">
+                                C
+                            </span>
+
+                            <input
+                                type="text"
+                                name="option_c"
+                                placeholder="Option C"
+                                maxlength="200"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="option">
+
+                            <span class="option-label">
+                                D
+                            </span>
+
+                            <input
+                                type="text"
+                                name="option_d"
+                                placeholder="Option D"
+                                maxlength="200"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CORRECT ANSWER -->
+
+                    <div class="correct-section">
+
+                        <div class="options-title">
+                            Correct Answer
+                        </div>
+
+
+                        <div class="correct-options">
+
+
+                            <div class="correct-option">
+
+                                <input
+                                    type="radio"
+                                    id="correctA"
+                                    name="correct_answer"
+                                    value="A"
+                                    required
+                                >
+
+                                <label for="correctA">
+                                    A
+                                </label>
+
+                            </div>
+
+
+                            <div class="correct-option">
+
+                                <input
+                                    type="radio"
+                                    id="correctB"
+                                    name="correct_answer"
+                                    value="B"
+                                >
+
+                                <label for="correctB">
+                                    B
+                                </label>
+
+                            </div>
+
+
+                            <div class="correct-option">
+
+                                <input
+                                    type="radio"
+                                    id="correctC"
+                                    name="correct_answer"
+                                    value="C"
+                                >
+
+                                <label for="correctC">
+                                    C
+                                </label>
+
+                            </div>
+
+
+                            <div class="correct-option">
+
+                                <input
+                                    type="radio"
+                                    id="correctD"
+                                    name="correct_answer"
+                                    value="D"
+                                >
+
+                                <label for="correctD">
+                                    D
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SUBMIT -->
+
+                    <button
+                        type="submit"
+                        class="add-button"
+                        id="submitBtn"
+                    >
+                        + Add Question
+                    </button>
+
+                    <button
+                        type="button"
+                        class="cancel-button"
+                        id="cancelBtn"
+                    >
+                        Cancel
+                    </button>
+
+                </form>
+
+            </div>
+
+
+
+            <!-- =================================
+                 RIGHT PANEL
+            ================================== -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <div class="eyebrow">
+                            QUESTION BANK
+                        </div>
+
+                        <h2>
+                            Your Questions
+                        </h2>
+
+                    </div>
+
+
+                    <span class="question-count">
+                        {{ questions|length }}
+                    </span>
+
+                </div>
+
+
+                {% if questions %}
+
+
+                <div class="question-list">
+
+
+                    {% for question in questions %}
+
+                    <article
+                        class="question-item"
+                        data-question-id="{{ question.id }}"
+                        data-question='{{ question | tojson }}'
+                    >
+
+
+                        <div class="question-top">
+
+
+                            <!-- NUMBER -->
+
+                            <div class="question-number">
+                                {{ loop.index }}
+                            </div>
+
+
+                            <!-- CONTENT -->
+
+                            <div class="question-content">
+
+                                {% if question.image_url %}
+                                    <img
+                                        class="question-image"
+                                        src="{{ question.image_url }}"
+                                        alt="Question image"
+                                    >
+                                {% endif %}
+
+
+                                <h3>
+                                    {{ question.question_text }}
+                                </h3>
+
+
+                                <!-- OPTIONS -->
+
+                                <div class="question-options">
+
+
+                                    <div
+                                        class="
+                                            question-option
+                                            {% if question.correct_answer == 'A' %}
+                                                correct
+                                            {% endif %}
+                                        "
+                                    >
+                                        A. {{ question.option_a }}
+                                    </div>
+
+
+                                    <div
+                                        class="
+                                            question-option
+                                            {% if question.correct_answer == 'B' %}
+                                                correct
+                                            {% endif %}
+                                        "
+                                    >
+                                        B. {{ question.option_b }}
+                                    </div>
+
+
+                                    <div
+                                        class="
+                                            question-option
+                                            {% if question.correct_answer == 'C' %}
+                                                correct
+                                            {% endif %}
+                                        "
+                                    >
+                                        C. {{ question.option_c }}
+                                    </div>
+
+
+                                    <div
+                                        class="
+                                            question-option
+                                            {% if question.correct_answer == 'D' %}
+                                                correct
+                                            {% endif %}
+                                        "
+                                    >
+                                        D. {{ question.option_d }}
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ACTIONS -->
+
+                                <div class="question-actions">
+
+
+                                    <button
+                                        type="button"
+                                        class="small-button edit-btn"
+                                        data-question-id="{{ question.id }}"
+                                    >
+                                        Edit
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="small-button delete delete-btn"
+                                        data-question-id="{{ question.id }}"
+                                    >
+                                        Delete
+                                    </button>
+
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
+                    </article>
+
+                    {% endfor %}
+
+
+                </div>
+
+
+                {% else %}
+
+
+                <!-- EMPTY STATE -->
+
+                <div class="empty">
+
+                    <div class="empty-icon">
+                        ?
+                    </div>
+
+                    <h3>
+                        No questions yet
+                    </h3>
+
+                    <p>
+                        Add your first question using the builder.
+                    </p>
+
+                </div>
+
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        {% endif %}
+
+
+    </main>
+
+</div>
+
+
+
+<!-- =========================================
+     JAVASCRIPT
+========================================== -->
+
+<script>
+
+    const form = document.getElementById("questionForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const questionText = document.getElementById("questionText");
+    const questionImage = document.getElementById("questionImage");
+    const imagePreview = document.getElementById("imagePreview");
+
+    let isEditMode = false;
+    let editingQuestionId = null;
+    const quizId = "{{ quiz.id if quiz else '' }}";
+    const originalAction = form ? form.action : null;
+
+    // Form submission
+    if (form) {
+        form.addEventListener("submit", function () {
+            if (submitBtn) {
+                submitBtn.innerHTML = isEditMode ? "Updating Question..." : "Saving Question...";
+                submitBtn.style.opacity = "0.7";
+                submitBtn.style.pointerEvents = "none";
+            }
+        });
+    }
+
+    // Question text character limit warning
+    if (questionText) {
+        questionText.addEventListener("input", function () {
+            if (this.value.length >= 450) {
+                this.style.borderColor = "rgba(255,200,87,0.5)";
+            } else {
+                this.style.borderColor = "";
+            }
+        });
+    }
+
+    // Question image preview
+    if (questionImage && imagePreview) {
+        questionImage.addEventListener("change", function () {
+            const file = this.files && this.files[0];
+
+            if (!file) {
+                imagePreview.style.display = "none";
+                imagePreview.removeAttribute("src");
+                return;
+            }
+
+            if (!file.type.startsWith("image/")) {
+                alert("Please select an image file.");
+                this.value = "";
+                imagePreview.style.display = "none";
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("Image size must be 5 MB or less.");
+                this.value = "";
+                imagePreview.style.display = "none";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                imagePreview.src = event.target.result;
+                imagePreview.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Edit button click
+    document.querySelectorAll(".edit-btn").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const item = button.closest(".question-item");
+            const dataAttr = item.getAttribute("data-question");
+            
+            try {
+                const question = JSON.parse(dataAttr);
+                
+                // Populate form with question data
+                form.elements["question_text"].value = question.question_text;
+                form.elements["option_a"].value = question.option_a;
+                form.elements["option_b"].value = question.option_b;
+                form.elements["option_c"].value = question.option_c;
+                form.elements["option_d"].value = question.option_d;
+                
+                // Set correct answer
+                document.getElementById("correct" + question.correct_answer).checked = true;
+                
+                // Update form action to update endpoint
+                form.action = `/admin/quiz/${quizId}/questions/${question.id}/update`;
+                
+                // Update button text
+                submitBtn.innerHTML = "✓ Update Question";
+                
+                // Show cancel button
+                cancelBtn.classList.add("show");
+                
+                // Set edit mode
+                isEditMode = true;
+                editingQuestionId = question.id;
+                
+                // Scroll to form
+                form.scrollIntoView({ behavior: "smooth", block: "center" });
+                
+            } catch (e) {
+                console.error("Error parsing question data:", e);
+            }
+        });
+    });
+
+    // Delete button click
+    document.querySelectorAll(".delete-btn").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const item = button.closest(".question-item");
+            const dataAttr = item.getAttribute("data-question");
+            
+            try {
+                const question = JSON.parse(dataAttr);
+                
+                if (confirm("Delete this question?\n\nThis action cannot be undone.")) {
+                    const deleteForm = document.createElement("form");
+                    deleteForm.method = "POST";
+                    deleteForm.action = `/admin/quiz/${quizId}/questions/${question.id}/delete`;
+                    document.body.appendChild(deleteForm);
+                    deleteForm.submit();
+                }
+            } catch (e) {
+                console.error("Error parsing question data:", e);
+            }
+        });
+    });
+
+    // Cancel edit mode
+    if (cancelBtn) {
+        cancelBtn.addEventListener("click", function () {
+            form.reset();
+            form.action = originalAction;
+
+            if (imagePreview) {
+                imagePreview.style.display = "none";
+                imagePreview.removeAttribute("src");
+            }
+            submitBtn.innerHTML = "+ Add Question";
+            cancelBtn.classList.remove("show");
+            isEditMode = false;
+            editingQuestionId = null;
+            submitBtn.style.opacity = "1";
+            submitBtn.style.pointerEvents = "auto";
+        });
+    }
+
+</script>
+
+
+</body>
+
+</html>
