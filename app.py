@@ -1,5 +1,7 @@
 
 
+
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
@@ -689,12 +691,11 @@ def delete_question(quiz_id, question_id):
 
 
 # =========================================
-# TOGGLE QUIZ ACTIVE / DRAFT
+# QUIZ STATUS: START / STOP
 # =========================================
 
 @app.route("/admin/quiz/<quiz_id>/toggle-status", methods=["POST"])
 def toggle_quiz_status(quiz_id):
-
     if not admin_required():
         return redirect(url_for("admin_login"))
 
@@ -709,13 +710,21 @@ def toggle_quiz_status(quiz_id):
         )
 
         quiz = quiz_response.data
-
         if not quiz:
             flash("Quiz not found.", "error")
             return redirect(url_for("admin_dashboard"))
 
         current_status = (quiz.get("status") or "draft").lower()
-        new_status = "draft" if current_status == "running" else "running"
+
+        if current_status == "draft":
+            new_status = "running"
+            message = f'"{quiz["title"]}" has started.'
+        elif current_status == "running":
+            new_status = "completed"
+            message = f'"{quiz["title"]}" has been completed.'
+        else:
+            flash("This quiz is already completed and cannot be started again.", "error")
+            return redirect(url_for("admin_dashboard"))
 
         (
             supabase
@@ -725,16 +734,109 @@ def toggle_quiz_status(quiz_id):
             .execute()
         )
 
-        if new_status == "running":
-            flash(f'"{quiz["title"]}" is now ACTIVE.', "success")
-        else:
-            flash(f'"{quiz["title"]}" moved to DRAFT.', "success")
+        flash(message, "success")
 
     except Exception as error:
-        print("TOGGLE QUIZ STATUS ERROR:", repr(error))
+        print("QUIZ STATUS ERROR:", repr(error))
         flash(f"Unable to change quiz status: {error}", "error")
 
     return redirect(url_for("admin_dashboard"))
+
+
+# =========================================
+# LEGACY: CREATE NEXT ROUND FROM WINNERS (kept for backward compatibility)
+# =========================================
+
+@app.route("/admin/quiz/<quiz_id>/create-next-round", methods=["POST"])
+def create_next_round(quiz_id):
+    if not admin_required():
+        return redirect(url_for("admin_login"))
+
+    try:
+        quiz_response = (
+            supabase
+            .table("quizzes")
+            .select("id,title,status,round_number")
+            .eq("id", quiz_id)
+            .single()
+            .execute()
+        )
+        source_quiz = quiz_response.data
+
+        if not source_quiz:
+            flash("Quiz not found.", "error")
+            return redirect(url_for("admin_dashboard"))
+
+        if (source_quiz.get("status") or "").lower() != "completed":
+            flash("Complete the current round before creating the next round.", "error")
+            return redirect(url_for("admin_dashboard"))
+
+        winners_response = (
+            supabase
+            .table("winners")
+            .select("student_id")
+            .eq("quiz_id", quiz_id)
+            .execute()
+        )
+        winners = winners_response.data or []
+
+        student_ids = list(dict.fromkeys(
+            str(row.get("student_id")).strip()
+            for row in winners
+            if row.get("student_id") is not None and str(row.get("student_id")).strip()
+        ))
+
+        if not student_ids:
+            flash("Declare at least one winner before creating the next round.", "error")
+            return redirect(url_for("admin_dashboard"))
+
+        round_number = int(source_quiz.get("round_number") or 1) + 1
+
+        next_quiz_data = {
+            "title": f'{source_quiz["title"]} - Round {round_number}',
+            "description": f"Round {round_number} of {source_quiz["title"]}",
+            "status": "draft",
+            "round_number": round_number,
+            "parent_quiz_id": source_quiz["id"],
+            "winners_revealed": False,
+            "leaderboard_revealed": False,
+            "results_revealed": False
+        }
+
+        quiz_insert = (
+            supabase
+            .table("quizzes")
+            .insert(next_quiz_data)
+            .execute()
+        )
+
+        if not quiz_insert.data:
+            raise Exception("Next round quiz was not created.")
+
+        next_quiz = quiz_insert.data[0]
+
+        qualifier_rows = [
+            {
+                "quiz_id": next_quiz["id"],
+                "student_id": student_id,
+                "qualified_from_quiz_id": source_quiz["id"]
+            }
+            for student_id in student_ids
+        ]
+
+        supabase.table("quiz_qualifiers").insert(qualifier_rows).execute()
+
+        flash(
+            f'Round {round_number} created with {len(qualifier_rows)} qualified student(s). Add questions before starting it.',
+            "success"
+        )
+
+        return redirect(url_for("add_question_page", quiz_id=next_quiz["id"]))
+
+    except Exception as error:
+        print("CREATE NEXT ROUND ERROR:", repr(error))
+        flash(f"Unable to create next round: {error}", "error")
+        return redirect(url_for("admin_dashboard"))
 
 
 # =========================================
@@ -767,7 +869,7 @@ def admin_quiz_results(quiz_id):
             supabase
             .table("quiz_responses")
             .select(
-                "id,quiz_id,student_id,roll_no,name,section,year,"
+                "id,quiz_id,student_id,roll_no,name,branch,section,year,"
                 "answers,total_questions,answered_questions,score,"
                 "total_time_taken,submitted_at"
             )
@@ -965,7 +1067,7 @@ def admin_submission_detail(quiz_id, submission_id):
         response = (
             supabase.table("quiz_responses")
             .select(
-                "id,quiz_id,student_id,roll_no,name,section,year,"
+                "id,quiz_id,student_id,roll_no,name,branch,section,year,"
                 "answers,total_questions,answered_questions,score,"
                 "total_time_taken,submitted_at"
             )
@@ -1093,7 +1195,7 @@ def declare_quiz_winners(quiz_id):
         response = (
             supabase.table("quiz_responses")
             .select(
-                "id,quiz_id,student_id,roll_no,name,section,year,"
+                "id,quiz_id,student_id,roll_no,name,branch,section,year,"
                 "total_questions,answered_questions,score,"
                 "total_time_taken,submitted_at"
             )
@@ -1158,6 +1260,7 @@ def declare_quiz_winners(quiz_id):
                 "student_id": row.get("student_id"),
                 "roll_no": row.get("roll_no"),
                 "name": row.get("name"),
+                "branch": row.get("branch"),
                 "section": row.get("section"),
                 "year": row.get("year"),
                 "rank": rank,
@@ -1173,6 +1276,94 @@ def declare_quiz_winners(quiz_id):
             .insert(winner_rows)
             .execute()
         )
+
+        # ---------------------------------------------------------
+        # AUTOMATIC ROUND QUALIFICATION
+        # ---------------------------------------------------------
+        # If the next round already exists, automatically sync the
+        # newly declared winners into quiz_qualifiers.
+        # This also keeps redeclared winners in sync.
+        try:
+            source_round = (
+                supabase.table("quizzes")
+                .select("id,round_number")
+                .eq("id", quiz_id)
+                .single()
+                .execute()
+            ).data or {}
+
+            next_round_number = int(source_round.get("round_number") or 1) + 1
+
+            # First prefer a properly linked next round.
+            next_round_response = (
+                supabase.table("quizzes")
+                .select("id,parent_quiz_id,round_number,title")
+                .eq("parent_quiz_id", quiz_id)
+                .eq("round_number", next_round_number)
+                .limit(1)
+                .execute()
+            )
+            next_round = (next_round_response.data or [None])[0]
+
+            # If the next round was manually created and parent_quiz_id was
+            # left empty, fall back only when there is exactly one quiz with
+            # the expected round number. This supports an already-created
+            # Round 2 / Round 3 without accidentally selecting another series.
+            if not next_round:
+                fallback_response = (
+                    supabase.table("quizzes")
+                    .select("id,parent_quiz_id,round_number,title")
+                    .eq("round_number", next_round_number)
+                    .execute()
+                )
+                fallback_rounds = fallback_response.data or []
+                if len(fallback_rounds) == 1:
+                    next_round = fallback_rounds[0]
+                    if not next_round.get("parent_quiz_id"):
+                        try:
+                            supabase.table("quizzes").update({
+                                "parent_quiz_id": quiz_id
+                            }).eq("id", next_round["id"]).execute()
+                        except Exception as link_error:
+                            print("NEXT ROUND LINK ERROR:", repr(link_error))
+
+            if next_round:
+                next_quiz_id = next_round["id"]
+
+                # Remove old qualification mappings so redeclaration
+                # always reflects the current winner selection.
+                (
+                    supabase.table("quiz_qualifiers")
+                    .delete()
+                    .eq("quiz_id", next_quiz_id)
+                    .execute()
+                )
+
+                qualifier_rows = [
+                    {
+                        "quiz_id": next_quiz_id,
+                        "student_id": student_id,
+                        "qualified_from_quiz_id": quiz_id
+                    }
+                    for student_id in selected_student_ids
+                ]
+
+                if qualifier_rows:
+                    (
+                        supabase.table("quiz_qualifiers")
+                        .insert(qualifier_rows)
+                        .execute()
+                    )
+
+                print(
+                    f"ROUND QUALIFIERS SYNCED: {len(qualifier_rows)} "
+                    f"student(s) -> round {next_round_number}"
+                )
+
+        except Exception as qualifier_error:
+            # Winner declaration itself should not be lost just because
+            # qualification syncing failed.
+            print("ROUND QUALIFIER SYNC ERROR:", repr(qualifier_error))
 
         # Winners are independent from the leaderboard.
         # Redeclaring winners simply replaces the previous winners list.
@@ -1283,6 +1474,19 @@ def undeclare_quiz_winners(quiz_id):
             .execute()
         )
 
+        # Remove qualification mappings for the next round too.
+        # This prevents old winners from retaining Round 2 access
+        # after winners are undeclared.
+        try:
+            (
+                supabase.table("quiz_qualifiers")
+                .delete()
+                .eq("qualified_from_quiz_id", quiz_id)
+                .execute()
+            )
+        except Exception as qualifier_error:
+            print("UNDECLARE QUALIFIER CLEANUP ERROR:", repr(qualifier_error))
+
         (
             supabase.table("quizzes")
             .update({"winners_revealed": False})
@@ -1371,9 +1575,6 @@ def home():
     return redirect(url_for("admin_login"))
 
 
-# =========================================
-# RUN
-# =========================================
 
 if __name__ == "__main__":
 
