@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizCore | Student Submission</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#060816;--card:#0f1528;--border:rgba(255,255,255,.08);--text:#f5f7ff;--muted:#8d96ad;--primary:#7c5cff;--green:#31d9a3;--red:#ff6077}
+body{min-height:100vh;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at 85% 5%,rgba(124,92,255,.15),transparent 28%),radial-gradient(circle at 5% 90%,rgba(49,217,163,.06),transparent 25%),var(--bg)}
+a{text-decoration:none;color:inherit}.main{max-width:1200px;margin:auto;padding:32px 25px 70px}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px}.eyebrow{color:#a38cff;font-size:10px;font-weight:900;letter-spacing:1.6px}.top h1{margin-top:8px;font-size:31px}.top p{margin-top:7px;color:var(--muted);font-size:12px}
+.back{height:42px;padding:0 15px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.04);display:flex;align-items:center;font-size:11px;font-weight:800;white-space:nowrap}
+.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}.stat{padding:17px;border:1px solid var(--border);border-radius:15px;background:rgba(15,21,40,.82)}.stat span{display:block;color:var(--muted);font-size:9px;font-weight:900;letter-spacing:.6px}.stat strong{display:block;margin-top:9px;font-size:18px}
+.green{color:#74e8c3}.purple{color:#c0b4ff}
+.panel{border:1px solid var(--border);border-radius:20px;background:rgba(15,21,40,.80);overflow:hidden}.panel-head{padding:20px 22px;border-bottom:1px solid var(--border)}.panel-head h2{font-size:18px}.panel-head p{margin-top:5px;color:var(--muted);font-size:11px}
+.question-card{padding:22px;border-bottom:1px solid var(--border)}.question-card:last-child{border-bottom:0}
+.q-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}.q-number{padding:6px 9px;border-radius:8px;color:#c1b5ff;background:rgba(124,92,255,.09);font-size:9px;font-weight:900}
+.result-badge{padding:6px 10px;border-radius:999px;font-size:9px;font-weight:900}.result-badge.correct{color:#72e7c0;background:rgba(49,217,163,.09)}.result-badge.wrong{color:#ff899c;background:rgba(255,96,119,.09)}.result-badge.not_answered{color:#c4c9d5;background:rgba(255,255,255,.06)}
+.question-text{margin-bottom:15px;color:#fff;font-size:16px;line-height:1.55;font-weight:800}.options{display:grid;gap:8px}
+.option{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.025)}
+.option.selected{border-color:rgba(124,92,255,.35);background:rgba(124,92,255,.08)}.option.correct-option{border-color:rgba(49,217,163,.30);background:rgba(49,217,163,.06)}.option.selected.wrong-option{border-color:rgba(255,96,119,.30);background:rgba(255,96,119,.06)}
+.letter{flex:0 0 27px;width:27px;height:27px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:#bdb3ff;background:rgba(124,92,255,.09);font-size:9px;font-weight:900}.option.correct-option .letter{color:#75e7c2;background:rgba(49,217,163,.10)}.option.selected.wrong-option .letter{color:#ff91a2;background:rgba(255,96,119,.10)}
+.option-text{padding-top:4px;color:#d5d9e5;font-size:11px;line-height:1.45}
+.answer-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}.answer-box{padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}.answer-box span{display:block;color:var(--muted);font-size:9px;font-weight:900;margin-bottom:5px}.answer-box strong{font-size:11px}.answer-box.correct strong{color:#73e7c1}.answer-box.wrong strong{color:#ff8b9d}.answer-box.neutral strong{color:#d8dce7}
+.empty{padding:55px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:900px){.summary{grid-template-columns:repeat(3,1fr)}}@media(max-width:650px){.main{padding:22px 14px 50px}.top{flex-direction:column}.back{width:100%;justify-content:center}.summary{grid-template-columns:repeat(2,1fr)}.answer-summary{grid-template-columns:1fr}}@media(max-width:420px){.summary{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="main">
+<header class="top">
+<div>
+<div class="eyebrow">ADMIN / SUBMISSION REVIEW</div>
+<h1>{{ submission.name or 'Unknown Student' }}</h1>
+<p>{{ quiz.title }} · Complete answer review</p>
+</div>
+<a href="{{ url_for('admin_quiz_results', quiz_id=quiz.id) }}" class="back">← Back to Leaderboard</a>
+</header>
+
+<section class="summary">
+<div class="stat"><span>ROLL NUMBER</span><strong>{{ submission.roll_no or '—' }}</strong></div>
+<div class="stat"><span>YEAR / SECTION</span><strong>{{ submission.year or '—' }} / {{ submission.section or '—' }}</strong></div>
+<div class="stat"><span>SCORE</span><strong class="green">{{ submission.score or 0 }} / {{ submission.total_questions or 0 }}</strong></div>
+<div class="stat"><span>ANSWERED</span><strong>{{ submission.answered_questions or 0 }} / {{ submission.total_questions or 0 }}</strong></div>
+<div class="stat"><span>TOTAL TIME</span><strong class="purple" id="totalTime" data-seconds="{{ submission.total_time_taken or 0 }}">00 min 00 sec</strong></div>
+</section>
+
+<section class="panel">
+<div class="panel-head">
+<h2>Submitted Answers</h2>
+<p>Green = correct, red = wrong, grey = not answered. The correct answer is highlighted for every question.</p>
+</div>
+
+{% if questions %}
+{% for q in questions %}
+<article class="question-card">
+<div class="q-top">
+<span class="q-number">QUESTION {{ q.number }}</span>
+<span class="result-badge {{ q.state }}">
+{% if q.state == 'correct' %}✓ CORRECT{% elif q.state == 'wrong' %}✗ WRONG{% else %}— NOT ANSWERED{% endif %}
+</span>
+</div>
+
+<div class="question-text">{{ q.question_text }}</div>
+
+<div class="options">
+{% for letter, text in q.options.items() %}
+<div class="option {% if q.student_answer == letter %}selected{% endif %} {% if q.correct_answer == letter %}correct-option{% endif %} {% if q.student_answer == letter and q.correct_answer != letter %}wrong-option{% endif %}">
+<div class="letter">{{ letter }}</div>
+<div class="option-text">
+{{ text }}
+{% if q.student_answer == letter %}<strong style="margin-left:6px;">— Student Answer</strong>{% endif %}
+{% if q.correct_answer == letter %}<strong style="margin-left:6px;">— Correct Answer</strong>{% endif %}
+</div>
+</div>
+{% endfor %}
+</div>
+
+<div class="answer-summary">
+<div class="answer-box {% if q.state == 'correct' %}correct{% elif q.state == 'wrong' %}wrong{% else %}neutral{% endif %}">
+<span>STUDENT ANSWER</span>
+<strong>{% if q.student_answer %}{{ q.student_answer }}{% else %}Not Answered{% endif %}</strong>
+</div>
+<div class="answer-box correct"><span>CORRECT ANSWER</span><strong>{{ q.correct_answer or '—' }}</strong></div>
+</div>
+</article>
+{% endfor %}
+{% else %}
+<div class="empty">No questions were found for this quiz.</div>
+{% endif %}
+</section>
+</main>
+
+<script>
+function formatTime(seconds){
+seconds=Math.max(0,Number(seconds)||0);
+const h=Math.floor(seconds/3600);
+const m=Math.floor((seconds%3600)/60);
+const s=seconds%60;
+if(h)return `${String(h).padStart(2,'0')} hr ${String(m).padStart(2,'0')} min ${String(s).padStart(2,'0')} sec`;
+return `${String(m).padStart(2,'0')} min ${String(s).padStart(2,'0')} sec`;
+}
+const totalTime=document.getElementById("totalTime");
+if(totalTime) totalTime.textContent=formatTime(totalTime.dataset.seconds);
+</script>
+</body>
+</html>
